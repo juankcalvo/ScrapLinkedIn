@@ -1,0 +1,57 @@
+﻿{
+   "CodeGenerationMode": 4,
+   "ContextClassName": "LinkedInContext",
+   "ContextNamespace": null,
+   "FilterSchemas": false,
+   "IncludeConnectionString": true,
+   "ModelNamespace": null,
+   "OutputContextPath": "Database\\Contexto",
+   "OutputPath": "Database\\Models",
+   "PreserveCasingWithRegex": true,
+   "ProjectRootNamespace": "ScrapLinkedInDall",
+   "Schemas": null,
+   "SelectedHandlebarsLanguage": 2,
+   "SelectedToBeGenerated": 0,
+   "T4TemplatePath": null,
+   "Tables": [
+      {
+         "Name": "[dbo].[Education]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[Experience]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[LicenseCertification]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[UserProfile]",
+         "ObjectType": 0
+      }
+   ],
+   "UiHint": null,
+   "UncountableWords": null,
+   "UseBoolPropertiesWithoutDefaultSql": false,
+   "UseDatabaseNames": false,
+   "UseDateOnlyTimeOnly": true,
+   "UseDbContextSplitting": false,
+   "UseDecimalDataAnnotationForSprocResult": true,
+   "UseFluentApiOnly": false,
+   "UseHandleBars": false,
+   "UseHierarchyId": false,
+   "UseInflector": true,
+   "UseLegacyPluralizer": false,
+   "UseManyToManyEntity": false,
+   "UseNoDefaultConstructor": false,
+   "UseNoNavigations": false,
+   "UseNoObjectFilter": false,
+   "UseNodaTime": false,
+   "UseNullableReferences": false,
+   "UsePrefixNavigationNaming": false,
+   "UseSchemaFolders": true,
+   "UseSchemaNamespaces": false,
+   "UseSpatial": false,
+   "UseT4": false
+}

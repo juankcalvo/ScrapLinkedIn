@@ -72,40 +72,54 @@ public class ScrapLinkedin
                 }
             }
 
-            using (var context = new LinkedInContext())
+            var visitedProfiles = new HashSet<string>();
+
+            while (true) // Bucle infinito hasta que se detenga manualmente
             {
-                foreach (var href in hrefs)
+                if (hrefs.Count == 0)
                 {
-                    var newPage = await browser.NewPageAsync();
-                    await newPage.GoToAsync(href);
-                    await newPage.WaitForSelectorAsync("div.display-flex");
+                    Console.WriteLine("No more profiles to visit.");
+                    break;
+                }
 
-                    var name = await GetInnerTextByMultipleXPaths(newPage,
-                        "//h1[contains(@class,'text-heading-xlarge inline')]");
-                    var headline = await GetInnerTextByMultipleXPaths(newPage,
-                        "//div[@class='text-body-medium break-words']");
-                    var location = await GetInnerTextByMultipleXPaths(newPage,
-                        "//span[contains(@class,'text-body-small inline')]");
+                var href = hrefs[0];
+                hrefs.RemoveAt(0);
 
-                    // Verificar si el perfil ya existe en la base de datos
+                if (visitedProfiles.Contains(href))
+                {
+                    continue;
+                }
+
+                visitedProfiles.Add(href);
+
+                var newPage = await browser.NewPageAsync();
+                await newPage.GoToAsync(href);
+                await newPage.WaitForSelectorAsync("div.display-flex");
+
+                var name = await GetInnerTextByMultipleXPaths(newPage,
+                    "//h1[contains(@class,'text-heading-xlarge inline')]");
+                var headline = await GetInnerTextByMultipleXPaths(newPage,
+                    "//div[@class='text-body-medium break-words']");
+                var location = await GetInnerTextByMultipleXPaths(newPage,
+                    "//span[contains(@class,'text-body-small inline')]");
+
+                using (var context = new LinkedInContext())
+                {
                     var existingProfile = await context.UserProfiles
                         .FirstOrDefaultAsync(up => up.Name == name && up.Headline == headline && up.Location == location);
 
                     if (existingProfile == null)
                     {
-                        // Extract four experiences
                         var experience1 = await GetExperienceDetails(newPage, 1);
                         var experience2 = await GetExperienceDetails(newPage, 2);
                         var experience3 = await GetExperienceDetails(newPage, 3);
                         var experience4 = await GetExperienceDetails(newPage, 4);
 
-                        // Extract four educations
                         var education1 = await GetEducationDetails(newPage, 1);
                         var education2 = await GetEducationDetails(newPage, 2);
                         var education3 = await GetEducationDetails(newPage, 3);
                         var education4 = await GetEducationDetails(newPage, 4);
 
-                        // Extract four licenses and certifications
                         var license1 = await GetLicenseDetails(newPage, 1);
                         var license2 = await GetLicenseDetails(newPage, 2);
                         var license3 = await GetLicenseDetails(newPage, 3);
@@ -146,15 +160,29 @@ public class ScrapLinkedin
                     {
                         Console.WriteLine($"Profile for {name} already exists.");
                     }
-
-                    await newPage.CloseAsync();
-
-                    // Add delay between each profile to avoid 426 error
-                    await Task.Delay(5000); // 5 seconds
                 }
-            }
 
-            await Task.Delay(-1);
+                var newShowAllButton = await newPage.XPathAsync("//div[@id='profile-content']/div[1]/div[2]/div[1]/div[1]/aside[1]/section[2]/div[3]/div[1]/div[1]/div[1]/a[1]");
+                if (newShowAllButton.Length > 0)
+                {
+                    await newShowAllButton[0].ClickAsync();
+                    await Task.Delay(3000); // Esperar a que la ventana emergente cargue completamente
+
+                    var newProfileLinks = await newPage.XPathAsync(profileLinksXPath);
+                    foreach (var newProfileLink in newProfileLinks)
+                    {
+                        var newHref = await newProfileLink.EvaluateFunctionAsync<string>("el => el.href");
+                        if (!string.IsNullOrEmpty(newHref) && !visitedProfiles.Contains(newHref))
+                        {
+                            hrefs.Add(newHref);
+                        }
+                    }
+                }
+
+                await newPage.CloseAsync();
+
+                await Task.Delay(5000); // 5 seconds
+            }
         }
         catch (Exception ex)
         {
